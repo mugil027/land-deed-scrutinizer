@@ -33,17 +33,32 @@ def extract_deed_info(cleaned_text):
     prompt = f"""
 You are an intelligent assistant specialized in Indian legal land records.
 
-Extract the following fields from the land deed text below:
+Extract the following fields from the land deed text:
 
 - Deed Type
-- Buyer Name
-- Seller Name
+- Any of the following role pairs (if present):
+    - Buyer and Seller
+    - Vendor and Purchaser
+    - Lessor and Lessee
+    - Donor and Donee
 - Survey Number
 - Location
 - Date of Execution
 - Registration Number
 
-Return ONLY a valid JSON response with those fields and values.
+If any role pair is missing, return it with `null`.
+
+Return ONLY a valid JSON like this:
+
+{{
+    "Deed Type": "...",
+    "Seller / Vendor / Lessor / Donor": "...",
+    "Buyer / Purchaser / Lessee / Donee": "...",
+    "Survey Number": "...",
+    "Location": "...",
+    "Date of Execution": "...",
+    "Registration Number": "..."
+}}
 
 Text:
 {cleaned_text}
