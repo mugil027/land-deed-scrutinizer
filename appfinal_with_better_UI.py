@@ -37,7 +37,7 @@ You are a legal assistant. Extract the following information from this Indian la
 
 📄 Please return only the markdown table like this:
 
-| Field               | Value                       |
+| Field               | Detail                      |
 |---------------------|-----------------------------|
 | Deed Type           | ...                         |
 | Party 1             | ...                         |
@@ -47,6 +47,7 @@ You are a legal assistant. Extract the following information from this Indian la
 | Date of Execution   | ...                         |
 | Registration Number | ...                         |
 
+replace party 1 as seller, vendor, lessor or donor according to the deed and replace party 2 as buyer, purchaser, lessee or donee according to the titel of the deed
 Text:
 {cleaned_text}
 """
@@ -58,12 +59,13 @@ Text:
     return response.choices[0].message.content
 
 # === STREAMLIT UI ===
-st.set_page_config(page_title="🧾 Land Deed Scrutinizer", layout="wide")
+st.set_page_config(page_title="🧾 Land Deed Scrutinizer Built ", layout="wide")
 
 with st.container():
     st.markdown("""
         <div style='background-color: #2E7D32; padding: 1.5rem; border-radius: 10px;'>
             <h1 style='color: white; text-align: center;'>📜 Land Deed Info Extractor</h1>
+            <h3 style='color: white; text-align: center;'>Buit by Mugil M with ❤️ using Streamlit and Groq AI</h3>
             <p style='color: white; text-align: center;'>Upload a land deed (PDF or image) and extract structured legal information.</p>
         </div>
     """, unsafe_allow_html=True)
@@ -102,5 +104,5 @@ with col2:
 # === Optional Footer ===
 st.markdown("""
     <hr>
-    <p style='text-align: center; color: gray;'>Built with ❤️ using Streamlit and Groq AI</p>
+    <p style='text-align: center; color: gray;'>Built by Mugil M with ❤️ using Streamlit and Groq AI</p>
 """, unsafe_allow_html=True)
