@@ -2,8 +2,8 @@
  "cells": [
   {
    "cell_type": "code",
-   "execution_count": None,
-   "id": "b48104be-abde-43bb-98c4-d325a028bd6b",
+   "execution_count": null,
+   "id": "9f45b89a-9709-4b54-aded-9563908df61c",
    "metadata": {},
    "outputs": [],
    "source": [
@@ -16,7 +16,7 @@
     "import json\n",
     "\n",
     "# === Set your Groq API key ===\n",
-    "GROQ_API_KEY = \"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\"  # Replace with your actual key\n",
+    "GROQ_API_KEY = \"gsk_your_groq_key_here\"  # Replace with your actual key\n",
     "client = OpenAI(api_key=GROQ_API_KEY, base_url=\"https://api.groq.com/openai/v1\")\n",
     "\n",
     "# === Extract text from uploaded file ===\n",
