@@ -34,16 +34,16 @@ You are a legal assistant. Extract the following details from Indian land deed t
 - Date of Execution
 - Registration Number
 
-Return valid JSON only:
-{{
-  "Deed Type": "...",
-  "Party 1 (Seller/Vendor/Lessor/Donor)": "...",
-  "Party 2 (Buyer/Purchaser/Lessee/Donee)": "...",
-  "Survey Number": "...",
-  "Location": "...",
-  "Date of Execution": "...",
-  "Registration Number": "..."
-}}
+give the output in tabular column as below and also color and style it as you wish but it should look professional 
+| Field               | Value                       |
+|---------------------|-----------------------------|
+| Deed Type           | ...                         |
+| Party 1             | ...                         |
+| Party 2             | ...                         |
+| Survey Number       | ...                         |
+| Location            | ...                         |
+| Date of Execution   | ...                         |
+| Registration Number | ...                         |
 
 Text:
 {cleaned_text}
@@ -109,7 +109,7 @@ with col2:
             else:
                 st.warning("No valid data extracted.")
         except:
-            st.error("⚠️ Could not parse result as JSON")
+            st.error("Deed Information")
             st.text(result)
     else:
         st.warning("📂 Please upload a land deed file to proceed.")
@@ -117,5 +117,5 @@ with col2:
 # === Optional Footer ===
 st.markdown("""
     <hr>
-    <p style='text-align: center; color: gray;'>Built with ❤️ using Streamlit and Groq AI</p>
+    <p style='text-align: center; color: gray;'>Built by MUGIL M with ❤️ using Streamlit and Groq AI</p>
 """, unsafe_allow_html=True)
