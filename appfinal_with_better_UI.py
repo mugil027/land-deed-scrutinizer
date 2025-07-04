@@ -59,13 +59,13 @@ Text:
     return response.choices[0].message.content
 
 # === STREAMLIT UI ===
-st.set_page_config(page_title="🧾 Land Deed Scrutinizer Built ", layout="wide")
+st.set_page_config(page_title="🧾 Land Deed Scrutinizer  ", layout="wide")
 
 with st.container():
     st.markdown("""
         <div style='background-color: #2E7D32; padding: 1.5rem; border-radius: 10px;'>
             <h1 style='color: white; text-align: center;'>📜 Land Deed Info Extractor</h1>
-            <h3 style='color: white; text-align: center;'>Buit by Mugil M with ❤️ using Streamlit and Groq AI</h3>
+            <h3 style='color: white; text-align: center;'>Built by Mugil M with ❤️ using Streamlit and Groq AI</h3>
             <p style='color: white; text-align: center;'>Upload a land deed (PDF or image) and extract structured legal information.</p>
         </div>
     """, unsafe_allow_html=True)
