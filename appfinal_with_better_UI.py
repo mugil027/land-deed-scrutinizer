@@ -25,16 +25,18 @@ def clean_text(raw):
 # === FUNCTION: Extract fields using LLM ===
 def extract_deed_info(cleaned_text):
     prompt = f"""
-You are a legal assistant. Extract the following details from Indian land deed text:
+You are a legal assistant. Extract the following information from this Indian land deed text and present it in a markdown table:
+
 - Deed Type
-- Seller/Vendor/Lessor/Donor
-- Buyer/Purchaser/Lessee/Donee
+- Party 1 (Seller/Vendor/Lessor/Donor)
+- Party 2 (Buyer/Purchaser/Lessee/Donee)
 - Survey Number
 - Location
 - Date of Execution
 - Registration Number
 
-give the output in tabular column as below and also color and style it as you wish but it should look professional 
+📄 Please return only the markdown table like this:
+
 | Field               | Value                       |
 |---------------------|-----------------------------|
 | Deed Type           | ...                         |
@@ -88,34 +90,17 @@ with col2:
             cleaned = clean_text(raw_text)
             result = extract_deed_info(cleaned)
 
-        try:
-            result_dict = json.loads(result)
+        if result:
             st.success("✅ Extraction Complete")
-
-            # 🎨 Stylish and formatted result display
             st.markdown("### 🧾 Extracted Land Deed Information")
-
-            if result_dict:
-                c1, c2 = st.columns(2)
-                with c1:
-                    st.markdown(f"<b style='color:#4CAF50;'>📜 Deed Type:</b> {result_dict.get('Deed Type', '')}", unsafe_allow_html=True)
-                    st.markdown(f"<b style='color:#2196F3;'>👤 Party 1:</b> {result_dict.get('Party 1 (Seller/Vendor/Lessor/Donor)', '')}", unsafe_allow_html=True)
-                    st.markdown(f"<b style='color:#2196F3;'>👥 Party 2:</b> {result_dict.get('Party 2 (Buyer/Purchaser/Lessee/Donee)', '')}", unsafe_allow_html=True)
-                    st.markdown(f"<b style='color:#673AB7;'>📍 Survey Number:</b> {result_dict.get('Survey Number', '')}", unsafe_allow_html=True)
-                with c2:
-                    st.markdown(f"<b style='color:#795548;'>🗺️ Location:</b> {result_dict.get('Location', '')}", unsafe_allow_html=True)
-                    st.markdown(f"<b style='color:#FF5722;'>🗓️ Date of Execution:</b> {result_dict.get('Date of Execution', '')}", unsafe_allow_html=True)
-                    st.markdown(f"<b style='color:#E91E63;'>📝 Registration Number:</b> {result_dict.get('Registration Number', '')}", unsafe_allow_html=True)
-            else:
-                st.warning("No valid data extracted.")
-        except:
-            st.error("Deed Information")
-            st.text(result)
+            st.markdown(result, unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ No data extracted.")
     else:
         st.warning("📂 Please upload a land deed file to proceed.")
 
 # === Optional Footer ===
 st.markdown("""
     <hr>
-    <p style='text-align: center; color: gray;'>Built by MUGIL M with ❤️ using Streamlit and Groq AI</p>
+    <p style='text-align: center; color: gray;'>Built with ❤️ using Streamlit and Groq AI</p>
 """, unsafe_allow_html=True)
