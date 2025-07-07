@@ -48,6 +48,8 @@ You are a legal assistant. Extract the following information from this Indian la
 | Registration Number | ...                         |
 
 replace party 1 as seller, vendor, lessor or donor according to the deed and replace party 2 as buyer, purchaser, lessee or donee according to the titel of the deed
+
+and also if the document is in kannada please translate it to english and provide the information in format shown above
 Text:
 {cleaned_text}
 """
