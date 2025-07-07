@@ -7,7 +7,7 @@ from groq import Groq
 
 # === CONFIG ===
 GROQ_API_KEY = "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"  # Replace this with your actual API key
-client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
+client = Groq(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
 # === FUNCTION: Extract text ===
 def extract_text(file):
