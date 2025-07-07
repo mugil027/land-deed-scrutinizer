@@ -3,7 +3,7 @@ from PIL import Image
 import fitz  # PyMuPDF
 import pytesseract
 import json
-from openai import OpenAI
+from groq import Groq
 
 # === CONFIG ===
 GROQ_API_KEY = "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"  # Replace this with your actual API key
