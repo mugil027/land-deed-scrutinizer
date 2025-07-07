@@ -6,7 +6,7 @@ import json
 from openai import OpenAI
 
 # === CONFIG ===
-GROQ_API_KEY = "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"  # Replace this with your actual API key
+GROQ_API_KEY = "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"  # Replace this with your actual API key
 client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
 # === FUNCTION: Extract text ===
