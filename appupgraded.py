@@ -2,35 +2,43 @@ import streamlit as st
 from PIL import Image
 import fitz  # PyMuPDF
 import pytesseract
-from groq import Groq
-from libretranslatepy import LibreTranslateAPI
+import json
+from openai import OpenAI
+import re
 
 # === CONFIG ===
-client = Groq(api_key="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")
-translator = LibreTranslateAPI("https://libretranslate.de")
+GROQ_API_KEY = "YOUR_API_KEY_HERE"  # Replace with your Groq API key
+client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
-# === FUNCTION: Extract text ===
+# === FUNCTION: Extract text from file ===
 def extract_text(file):
     if file.name.endswith(".pdf"):
         doc = fitz.open(stream=file.read(), filetype="pdf")
-        return " ".join(page.get_text() for page in doc)
+        full_text = " ".join(page.get_text() for page in doc)
     else:
         image = Image.open(file)
-        return pytesseract.image_to_string(image, lang='kan+eng')  # Use Kannada + English OCR
+        full_text = pytesseract.image_to_string(image, lang="kan+eng", config="--psm 6")
+    return full_text
 
-# === FUNCTION: Clean text ===
+# === FUNCTION: Clean raw text ===
 def clean_text(raw):
     return " ".join([line.strip() for line in raw.splitlines() if line.strip()])
 
-# === FUNCTION: Translate Kannada to English ===
-def translate_to_english(text):
-    try:
-        translated = translator.translate(text, source="kn", target="en")
-        return translated
-    except Exception as e:
-        return f"Translation error: {e}"
+# === FUNCTION: Detect Kannada text ===
+def is_kannada(text):
+    return bool(re.search(r'[\u0C80-\u0CFF]', text))  # Kannada Unicode range
 
-# === FUNCTION: Extract fields using LLM ===
+# === FUNCTION: Translate Kannada to English ===
+def translate_kannada_to_english(text):
+    prompt = f"Translate the following Kannada legal document into English:\n\n{text}"
+    response = client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
+    )
+    return response.choices[0].message.content.strip()
+
+# === FUNCTION: Extract deed info using LLM ===
 def extract_deed_info(cleaned_text):
     prompt = f"""
 You are a legal assistant. Extract the following information from this Indian land deed text and present it in a markdown table:
@@ -55,8 +63,7 @@ You are a legal assistant. Extract the following information from this Indian la
 | Date of Execution   | ...                         |
 | Registration Number | ...                         |
 
-replace party 1 as seller, vendor, lessor or donor according to the deed and replace party 2 as buyer, purchaser, lessee or donee according to the title of the deed
-Text:
+Replace 'Party 1' and 'Party 2' as appropriate to the deed title. The text is:
 {cleaned_text}
 """
     response = client.chat.completions.create(
@@ -67,14 +74,14 @@ Text:
     return response.choices[0].message.content
 
 # === STREAMLIT UI ===
-st.set_page_config(page_title="📜 Land Deed Scrutinizer", layout="wide")
+st.set_page_config(page_title="🧾 Land Deed Scrutinizer", layout="wide")
 
 with st.container():
     st.markdown("""
         <div style='background-color: #2E7D32; padding: 1.5rem; border-radius: 10px;'>
             <h1 style='color: white; text-align: center;'>📜 Land Deed Info Extractor</h1>
             <h3 style='color: white; text-align: center;'>Built by Mugil M with ❤️ using Streamlit and Groq AI</h3>
-            <p style='color: white; text-align: center;'>Upload a Kannada or English land deed (PDF or image) and extract structured legal information.</p>
+            <p style='color: white; text-align: center;'>Upload a land deed (PDF or image) and extract structured legal information, even from Kannada documents.</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -97,20 +104,20 @@ with col2:
     if uploaded_file:
         with st.spinner("🔍 Reading and analyzing document..."):
             raw_text = extract_text(uploaded_file)
-            cleaned = clean_text(raw_text)
+            cleaned_text = clean_text(raw_text)
 
-            st.markdown("#### 📝 OCR Output")
-            st.code(cleaned[:1000] + "...", language='text')
+            if is_kannada(cleaned_text):
+                st.info("🌐 Kannada document detected. Translating to English...")
+                translated_text = translate_kannada_to_english(cleaned_text)
+                final_text = translated_text
+            else:
+                final_text = cleaned_text
 
-            translated_text = translate_to_english(cleaned)
-            st.markdown("#### 🌐 Translated Text")
-            st.code(translated_text[:1000] + "...", language='text')
-
-            result = extract_deed_info(translated_text)
+            result = extract_deed_info(final_text)
 
         if result:
             st.success("✅ Extraction Complete")
-            st.markdown("### 📜 Extracted Land Deed Information")
+            st.markdown("### 🧾 Extracted Land Deed Information")
             st.markdown(result, unsafe_allow_html=True)
         else:
             st.warning("⚠️ No data extracted.")
