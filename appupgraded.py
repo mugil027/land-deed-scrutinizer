@@ -2,12 +2,11 @@ import streamlit as st
 from PIL import Image
 import fitz  # PyMuPDF
 import pytesseract
-import openai
+from groq import Groq
 from libretranslatepy import LibreTranslateAPI
 
 # === CONFIG ===
-openai.api_key = "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"
-openai.base_url = "https://api.groq.com/openai/v1"
+client = Groq(api_key="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")
 translator = LibreTranslateAPI("https://libretranslate.de")
 
 # === FUNCTION: Extract text ===
@@ -60,7 +59,7 @@ replace party 1 as seller, vendor, lessor or donor according to the deed and rep
 Text:
 {cleaned_text}
 """
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="llama3-70b-8192",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
