@@ -2,13 +2,12 @@ import streamlit as st
 from PIL import Image
 import fitz  # PyMuPDF
 import pytesseract
-import json
-from openai import OpenAI
+import openai
 from googletrans import Translator
 
 # === CONFIG ===
-GROQ_API_KEY = "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"
-client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
+openai.api_key = "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"
+openai.base_url = "https://api.groq.com/openai/v1"
 translator = Translator()
 
 # === FUNCTION: Extract text ===
@@ -61,7 +60,7 @@ replace party 1 as seller, vendor, lessor or donor according to the deed and rep
 Text:
 {cleaned_text}
 """
-    response = client.chat.completions.create(
+    response = openai.ChatCompletion.create(
         model="llama3-70b-8192",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
@@ -104,7 +103,6 @@ with col2:
             st.markdown("#### 📝 OCR Output")
             st.code(cleaned[:1000] + "...", language='text')
 
-            # Try translation if text is mostly Kannada
             translated_text = translate_to_english(cleaned)
             st.markdown("#### 🌐 Translated Text")
             st.code(translated_text[:1000] + "...", language='text')
