@@ -3,11 +3,11 @@ from PIL import Image
 import fitz  # PyMuPDF
 import pytesseract
 import json
-from groq import Groq
+from openai import OpenAI
 
 # === CONFIG ===
 GROQ_API_KEY = "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"  # Replace this with your actual API key
-client = Groq(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
+client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
 # === FUNCTION: Extract text ===
 def extract_text(file):
