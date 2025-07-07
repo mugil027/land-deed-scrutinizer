@@ -3,12 +3,12 @@ from PIL import Image
 import fitz  # PyMuPDF
 import pytesseract
 import openai
-from googletrans import Translator
+from libretranslatepy import LibreTranslateAPI
 
 # === CONFIG ===
 openai.api_key = "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"
 openai.base_url = "https://api.groq.com/openai/v1"
-translator = Translator()
+translator = LibreTranslateAPI("https://libretranslate.de")
 
 # === FUNCTION: Extract text ===
 def extract_text(file):
@@ -26,8 +26,8 @@ def clean_text(raw):
 # === FUNCTION: Translate Kannada to English ===
 def translate_to_english(text):
     try:
-        translated = translator.translate(text, src='kn', dest='en')
-        return translated.text
+        translated = translator.translate(text, source="kn", target="en")
+        return translated
     except Exception as e:
         return f"Translation error: {e}"
 
