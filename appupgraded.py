@@ -17,6 +17,7 @@ def extract_text(file):
         full_text = " ".join(page.get_text() for page in doc)
     else:
         image = Image.open(file)
+        image = image.convert("L")  # Convert to grayscale
         full_text = pytesseract.image_to_string(image, lang="kan+eng", config="--psm 6")
     return full_text
 
@@ -27,6 +28,14 @@ def clean_text(raw):
 # === FUNCTION: Detect Kannada text ===
 def is_kannada(text):
     return bool(re.search(r'[\u0C80-\u0CFF]', text))  # Kannada Unicode range
+
+# === FUNCTION: Detect Deed Type ===
+def detect_deed_type(text):
+    deed_types = ["Sale Deed", "Gift Deed", "Mortgage Deed", "Release Deed", "Lease Deed", "Partition Deed"]
+    for deed in deed_types:
+        if deed.lower() in text.lower():
+            return deed
+    return "Not Found"
 
 # === FUNCTION: Translate Kannada to English ===
 def translate_kannada_to_english(text):
@@ -39,31 +48,32 @@ def translate_kannada_to_english(text):
     return response.choices[0].message.content.strip()
 
 # === FUNCTION: Extract deed info using LLM ===
-def extract_deed_info(cleaned_text):
+def extract_deed_info(cleaned_text, detected_type):
     prompt = f"""
-You are a legal assistant. Extract the following information from this Indian land deed text and present it in a markdown table:
+You are a legal assistant. Your task is to extract clearly present legal details from an Indian land deed.
 
-- Deed Type
-- Party 1 (Seller/Vendor/Lessor/Donor)
-- Party 2 (Buyer/Purchaser/Lessee/Donee)
-- Survey Number
-- Location
-- Date of Execution
-- Registration Number
+The deed type detected from text is: **{detected_type}**
 
-📄 Please return only the markdown table like this:
+Please return only this markdown table:
 
 | Field               | Detail                      |
 |---------------------|-----------------------------|
-| Deed Type           | ...                         |
-| Party 1             | ...                         |
-| Party 2             | ...                         |
-| Survey Number       | ...                         |
-| Location            | ...                         |
-| Date of Execution   | ...                         |
-| Registration Number | ...                         |
+| Deed Type           |                             |
+| Party 1             |                             |
+| Party 2             |                             |
+| Survey Number       |                             |
+| Location            |                             |
+| Date of Execution   |                             |
+| Registration Number |                             |
 
-Replace 'Party 1' and 'Party 2' as appropriate to the deed title. The text is:
+⚠️ Instructions:
+- Do NOT guess or assume any values.
+- Use the detected deed type unless the actual text clearly says otherwise.
+- Replace 'Party 1' as seller/vendor/lessor/donor, and 'Party 2' as buyer/purchaser/lessee/donee based on the deed type.
+- If any field is missing or unclear, write "Not Found".
+- If the document was in Kannada, assume it has been translated already.
+
+Deed Text:
 {cleaned_text}
 """
     response = client.chat.completions.create(
@@ -113,7 +123,8 @@ with col2:
             else:
                 final_text = cleaned_text
 
-            result = extract_deed_info(final_text)
+            detected_type = detect_deed_type(final_text)
+            result = extract_deed_info(final_text, detected_type)
 
         if result:
             st.success("✅ Extraction Complete")
