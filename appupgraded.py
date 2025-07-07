@@ -1,4 +1,4 @@
-import streamlit as st
+""import streamlit as st
 from PIL import Image
 import fitz  # PyMuPDF
 import pytesseract
@@ -44,7 +44,7 @@ You are a legal assistant. Extract the following information from this Indian la
 - Date of Execution
 - Registration Number
 
-\ud83d\udcc4 Please return only the markdown table like this:
+📄 Please return only the markdown table like this:
 
 | Field               | Detail                      |
 |---------------------|-----------------------------|
@@ -68,12 +68,12 @@ Text:
     return response.choices[0].message.content
 
 # === STREAMLIT UI ===
-st.set_page_config(page_title="\ud83d\udcdc Land Deed Scrutinizer  ", layout="wide")
+st.set_page_config(page_title="📜 Land Deed Scrutinizer", layout="wide")
 
 with st.container():
     st.markdown("""
         <div style='background-color: #2E7D32; padding: 1.5rem; border-radius: 10px;'>
-            <h1 style='color: white; text-align: center;'>\ud83d\udcdc Land Deed Info Extractor</h1>
+            <h1 style='color: white; text-align: center;'>📜 Land Deed Info Extractor</h1>
             <h3 style='color: white; text-align: center;'>Built by Mugil M with ❤️ using Streamlit and Groq AI</h3>
             <p style='color: white; text-align: center;'>Upload a Kannada or English land deed (PDF or image) and extract structured legal information.</p>
         </div>
@@ -84,19 +84,19 @@ st.markdown("---")
 col1, col2 = st.columns([1, 2])
 
 with col1:
-    uploaded_file = st.file_uploader("\ud83d\udcc1 Upload Document (PDF/Image)", type=["pdf", "png", "jpg", "jpeg"])
+    uploaded_file = st.file_uploader("📁 Upload Document (PDF/Image)", type=["pdf", "png", "jpg", "jpeg"])
 
     if uploaded_file:
         st.success(f"✅ {uploaded_file.name} uploaded successfully")
 
         if uploaded_file.name.endswith(".pdf"):
-            st.info("\ud83d\udcc4 PDF detected")
+            st.info("📄 PDF detected")
         else:
             st.image(uploaded_file, width=300)
 
 with col2:
     if uploaded_file:
-        with st.spinner("\ud83d\udd0d Reading and analyzing document..."):
+        with st.spinner("🔍 Reading and analyzing document..."):
             raw_text = extract_text(uploaded_file)
             cleaned = clean_text(raw_text)
 
@@ -111,12 +111,12 @@ with col2:
 
         if result:
             st.success("✅ Extraction Complete")
-            st.markdown("### \ud83d\udcdc Extracted Land Deed Information")
+            st.markdown("### 📜 Extracted Land Deed Information")
             st.markdown(result, unsafe_allow_html=True)
         else:
             st.warning("⚠️ No data extracted.")
     else:
-        st.warning("\ud83d\udcc2 Please upload a land deed file to proceed.")
+        st.warning("📂 Please upload a land deed file to proceed.")
 
 # === Optional Footer ===
 st.markdown("""
