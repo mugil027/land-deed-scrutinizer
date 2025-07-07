@@ -5,5 +5,6 @@ PyMuPDF
 openai
 fpdf
 googletrans==4.0.0-rc1
-openai
+libretranslatepy
+groq
 libretranslatepy
