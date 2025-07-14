@@ -98,23 +98,44 @@ with col2:
             st.success("✅ Extraction Complete")
             st.markdown("### 🧾 Extracted Land Deed Information")
             st.markdown(result, unsafe_allow_html=True)
-            
             import re
+            # === Parse Markdown Table to Dict ===
 
             def parse_table(md_text):
                 rows = re.findall(r"\| (.*?) \| (.*?) \|", md_text)
                 return {field.strip(): detail.strip() for field, detail in rows}
-
             extracted_dict = parse_table(result)
+
+# 🔍 TEMPORARY DEBUG (can remove later)
+# st.write("🔍 Extracted Fields:", extracted_dict)
+
+# === Handle Party 1 and Party 2 with fallbacks ===
+            party1 = (
+                extracted_dict.get("Party 1") or
+                extracted_dict.get("Seller") or
+                extracted_dict.get("Donor") or
+                extracted_dict.get("Vendor") or
+                "..."
+            )
+
+            party2 = (
+                extracted_dict.get("Party 2") or
+                extracted_dict.get("Buyer") or
+                extracted_dict.get("Donee") or
+                extracted_dict.get("Purchaser") or
+                "..."
+            )
 
             # === Build Summary Sentence ===
             summary = f"""
-            This **{extracted_dict.get('Deed Type', '...')}** deed dated **{extracted_dict.get('Date of Execution', '...')}** executed by **{extracted_dict.get('Party 1', '...')}** in favor of **{extracted_dict.get('Party 2', '...')}** in respect of Sy. No. **{extracted_dict.get('Survey Number', '...')}** (**{extracted_dict.get('Location', '...')}**) and the same is registered in the office of the Sub-Registrar, **{extracted_dict.get('Location', '...')}** in Book-1 as Doc. No. **{extracted_dict.get('Registration Number', '...')}**.
+            This **{extracted_dict.get('Deed Type', '...')}** deed dated **{extracted_dict.get('Date of Execution', '...')}** executed by **{party1}** in favor of **{party2}** in respect of Sy. No. **{extracted_dict.get('Survey Number', '...')}** (**{extracted_dict.get('Location', '...')}**) and the same is registered in the office of the Sub-Registrar, **{extracted_dict.get('Location', '...')}** in Book-1 as Doc. No. **{extracted_dict.get('Registration Number', '...')}**.
             """
 
             # === Display the Summary ===
             st.markdown("### 📝 Deed Summary")
             st.markdown(summary)
+
+            
         else:
             st.warning("⚠️ No data extracted.")
     else:
