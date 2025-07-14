@@ -10,13 +10,29 @@ GROQ_API_KEY = "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"  # Rep
 client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
 # === FUNCTION: Extract text ===
+import io
+
+# === FUNCTION: Extract text with fallback ===
 def extract_text(file):
     if file.name.endswith(".pdf"):
         doc = fitz.open(stream=file.read(), filetype="pdf")
-        return " ".join(page.get_text() for page in doc)
+        text = " ".join(page.get_text() for page in doc)
+
+        if text.strip():
+            return text  # PDF has actual text
+        else:
+            # Fallback to OCR for image-based PDFs
+            ocr_text = ""
+            for page in doc:
+                pix = page.get_pixmap(dpi=300)
+                img_bytes = pix.tobytes("png")
+                image = Image.open(io.BytesIO(img_bytes))
+                ocr_text += pytesseract.image_to_string(image) + "\n"
+            return ocr_text
     else:
         image = Image.open(file)
         return pytesseract.image_to_string(image)
+
 
 # === FUNCTION: Clean text ===
 def clean_text(raw):
