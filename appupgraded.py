@@ -4,76 +4,53 @@ import fitz  # PyMuPDF
 import pytesseract
 import json
 from openai import OpenAI
-import re
 
 # === CONFIG ===
-GROQ_API_KEY = "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"  # Replace with your Groq API key
+GROQ_API_KEY = "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"  # Replace this with your actual API key
 client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
 
-# === FUNCTION: Extract text from file ===
+# === FUNCTION: Extract text ===
 def extract_text(file):
     if file.name.endswith(".pdf"):
         doc = fitz.open(stream=file.read(), filetype="pdf")
-        full_text = " ".join(page.get_text() for page in doc)
+        return " ".join(page.get_text() for page in doc)
     else:
         image = Image.open(file)
-        image = image.convert("L")  # Convert to grayscale
-        full_text = pytesseract.image_to_string(image, lang="kan+eng", config="--psm 6")
-    return full_text
+        return pytesseract.image_to_string(image)
 
-# === FUNCTION: Clean raw text ===
+# === FUNCTION: Clean text ===
 def clean_text(raw):
     return " ".join([line.strip() for line in raw.splitlines() if line.strip()])
 
-# === FUNCTION: Detect Kannada text ===
-def is_kannada(text):
-    return bool(re.search(r'[\u0C80-\u0CFF]', text))  # Kannada Unicode range
-
-# === FUNCTION: Detect Deed Type ===
-def detect_deed_type(text):
-    deed_types = ["Sale Deed", "Gift Deed", "Mortgage Deed", "Release Deed", "Lease Deed", "Partition Deed"]
-    for deed in deed_types:
-        if deed.lower() in text.lower():
-            return deed
-    return "Not Found"
-
-# === FUNCTION: Translate Kannada to English ===
-def translate_kannada_to_english(text):
-    prompt = f"Translate the following Kannada legal document into English:\n\n{text}"
-    response = client.chat.completions.create(
-        model="llama3-70b-8192",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0
-    )
-    return response.choices[0].message.content.strip()
-
-# === FUNCTION: Extract deed info using LLM ===
-def extract_deed_info(cleaned_text, detected_type):
+# === FUNCTION: Extract fields using LLM ===
+def extract_deed_info(cleaned_text):
     prompt = f"""
-You are a legal assistant. Your task is to extract clearly present legal details from an Indian land deed.
+You are a legal assistant. Extract the following information from this Indian land deed text and present it in a markdown table:
 
-The deed type detected from text is: **{detected_type}**
+- Deed Type
+- Party 1 (Seller/Vendor/Lessor/Donor)
+- Party 2 (Buyer/Purchaser/Lessee/Donee)
+- Survey Number
+- Location
+- Date of Execution
+- Registration Number
 
-Please return only this markdown table:
+📄 Please return only the markdown table like this:
 
 | Field               | Detail                      |
 |---------------------|-----------------------------|
-| Deed Type           |                             |
-| Party 1             |                             |
-| Party 2             |                             |
-| Survey Number       |                             |
-| Location            |                             |
-| Date of Execution   |                             |
-| Registration Number |                             |
+| Deed Type           | ...                         |
+| Party 1             | ...                         |
+| Party 2             | ...                         |
+| Survey Number       | ...                         |
+| Location            | ...                         |
+| Date of Execution   | ...                         |
+| Registration Number | ...                         |
 
-⚠️ Instructions:
-- Do NOT guess or assume any values.
-- Use the detected deed type unless the actual text clearly says otherwise.
-- Replace 'Party 1' as seller/vendor/lessor/donor, and 'Party 2' as buyer/purchaser/lessee/donee based on the deed type.
-- If any field is missing or unclear, write "Not Found".
-- If the document was in Kannada, assume it has been translated already.
+replace party 1 as seller, vendor, lessor or donor according to the deed and replace party 2 as buyer, purchaser, lessee or donee according to the titel of the deed
 
-Deed Text:
+and also if the document is in kannada please translate it to english and provide the information in format shown above
+Text:
 {cleaned_text}
 """
     response = client.chat.completions.create(
@@ -84,14 +61,14 @@ Deed Text:
     return response.choices[0].message.content
 
 # === STREAMLIT UI ===
-st.set_page_config(page_title="🧾 Land Deed Scrutinizer", layout="wide")
+st.set_page_config(page_title="🧾 Land Deed Scrutinizer  ", layout="wide")
 
 with st.container():
     st.markdown("""
         <div style='background-color: #2E7D32; padding: 1.5rem; border-radius: 10px;'>
             <h1 style='color: white; text-align: center;'>📜 Land Deed Info Extractor</h1>
             <h3 style='color: white; text-align: center;'>Built by Mugil M with ❤️ using Streamlit and Groq AI</h3>
-            <p style='color: white; text-align: center;'>Upload a land deed (PDF or image) and extract structured legal information, even from Kannada documents.</p>
+            <p style='color: white; text-align: center;'>Upload a land deed (PDF or image) and extract structured legal information.</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -114,22 +91,30 @@ with col2:
     if uploaded_file:
         with st.spinner("🔍 Reading and analyzing document..."):
             raw_text = extract_text(uploaded_file)
-            cleaned_text = clean_text(raw_text)
-
-            if is_kannada(cleaned_text):
-                st.info("🌐 Kannada document detected. Translating to English...")
-                translated_text = translate_kannada_to_english(cleaned_text)
-                final_text = translated_text
-            else:
-                final_text = cleaned_text
-
-            detected_type = detect_deed_type(final_text)
-            result = extract_deed_info(final_text, detected_type)
+            cleaned = clean_text(raw_text)
+            result = extract_deed_info(cleaned)
 
         if result:
             st.success("✅ Extraction Complete")
             st.markdown("### 🧾 Extracted Land Deed Information")
             st.markdown(result, unsafe_allow_html=True)
+            
+            import re
+
+            def parse_table(md_text):
+                rows = re.findall(r"\| (.*?) \| (.*?) \|", md_text)
+                return {field.strip(): detail.strip() for field, detail in rows}
+
+            extracted_dict = parse_table(result)
+
+            # === Build Summary Sentence ===
+            summary = f"""
+            This **{extracted_dict.get('Deed Type', '...')}** deed dated **{extracted_dict.get('Date of Execution', '...')}** executed by **{extracted_dict.get('Party 1', '...')}** in favor of **{extracted_dict.get('Party 2', '...')}** in respect of Sy. No. **{extracted_dict.get('Survey Number', '...')}** (**{extracted_dict.get('Location', '...')}**) and the same is registered in the office of the Sub-Registrar, **{extracted_dict.get('Location', '...')}** in Book-1 as Doc. No. **{extracted_dict.get('Registration Number', '...')}**.
+            """
+
+            # === Display the Summary ===
+            st.markdown("### 📝 Deed Summary")
+            st.markdown(summary)
         else:
             st.warning("⚠️ No data extracted.")
     else:
