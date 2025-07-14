@@ -110,21 +110,16 @@ with col2:
 # st.write("🔍 Extracted Fields:", extracted_dict)
 
 # === Handle Party 1 and Party 2 with fallbacks ===
-            party1 = (
-                extracted_dict.get("Party 1") or
-                extracted_dict.get("Seller") or
-                extracted_dict.get("Donor") or
-                extracted_dict.get("Vendor") or
-                "..."
-            )
+            # === Flexible Party Name Matcher ===
+            def find_party_key(dictionary, role_keywords):
+                for key in dictionary:
+                    if any(role.lower() in key.lower() for role in role_keywords):
+                        return dictionary[key]
+                return "..."
 
-            party2 = (
-                extracted_dict.get("Party 2") or
-                extracted_dict.get("Buyer") or
-                extracted_dict.get("Donee") or
-                extracted_dict.get("Purchaser") or
-                "..."
-            )
+            party1 = find_party_key(extracted_dict, ["party 1", "seller", "donor", "vendor", "lessor", "landlord", "owner"])
+            party2 = find_party_key(extracted_dict, ["party 2", "buyer", "donee", "purchaser", "lessee", "tenant"])
+
 
             # === Build Summary Sentence ===
             summary = f"""
