@@ -8,6 +8,18 @@ from openai import OpenAI
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
+from fpdf import FPDF
+
+def images_to_pdf(images):
+    pdf = FPDF()
+    for image in images:
+        img = Image.open(image).convert('RGB')
+        img.save("temp.jpg")  # FPDF requires a file
+        pdf.add_page()
+        pdf.image("temp.jpg", x=10, y=10, w=190)
+    pdf.output("converted.pdf")
+    return "converted.pdf"
+
 
 # === CONFIG ===
 GROQ_API_KEY = "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"  # Replace this with your actual API key
@@ -98,6 +110,7 @@ col1, col2 = st.columns([1, 2])
 
 with col1:
     uploaded_file = st.file_uploader("📁 Upload Document (PDF/Image)", type=["pdf", "png", "jpg", "jpeg"])
+    
 
     if uploaded_file:
         st.success(f"✅ {uploaded_file.name} uploaded successfully")
@@ -106,6 +119,16 @@ with col1:
             st.info("📄 PDF detected")
         else:
             st.image(uploaded_file, width=300)
+    
+    multiple_images = st.file_uploader("📸 Upload multiple scanned images (optional)", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+
+    if multiple_images:
+        if st.button("📄 Convert Images to PDF"):
+            with st.spinner("Converting images to PDF..."):
+                pdf_path = images_to_pdf(multiple_images)
+                st.success("✅ Converted to PDF successfully!")
+                with open(pdf_path, "rb") as f:
+                    st.download_button("⬇️ Download PDF", f, file_name="LandDocument.pdf")
 
 with col2:
     if uploaded_file:
@@ -125,6 +148,7 @@ with col2:
                 rows = re.findall(r"\| (.*?) \| (.*?) \|", md_text)
                 return {field.strip(): detail.strip() for field, detail in rows}
             extracted_dict = parse_table(result)
+
 
 # 🔍 TEMPORARY DEBUG (can remove later)
 # st.write("🔍 Extracted Fields:", extracted_dict)
