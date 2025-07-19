@@ -5,6 +5,10 @@ import pytesseract
 import json
 from openai import OpenAI
 
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+
 # === CONFIG ===
 GROQ_API_KEY = "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"  # Replace this with your actual API key
 client = OpenAI(api_key=GROQ_API_KEY, base_url="https://api.groq.com/openai/v1")
