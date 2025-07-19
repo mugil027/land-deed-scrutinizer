@@ -120,7 +120,7 @@ with col1:
         else:
             st.image(uploaded_file, width=300)
     
-    multiple_images = st.file_uploader("📸 Upload multiple scanned images (optional)", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+    multiple_images = st.file_uploader("📸 Upload multiple scanned images (optional)", type=["jpg", "jpeg", "png", "pdf"], accept_multiple_files=True)
 
     if multiple_images:
         if st.button("📄 Convert Images to PDF"):
